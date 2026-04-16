@@ -1,0 +1,57 @@
+services:
+  # Redis for session storage
+  redis:
+    image: redis:7-alpine
+    container_name: diff-fuse-redis
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - diff-fuse-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: diff-fuse-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DIFF_FUSE_HOST=0.0.0.0
+      - DIFF_FUSE_PORT=8000
+      - DIFF_FUSE_ENVIRONMENT=prod
+      - DIFF_FUSE_RELOAD=false
+      - DIFF_FUSE_SESSION_BACKEND=redis
+      - DIFF_FUSE_REDIS_URL=redis://redis:6379/0
+      - DIFF_FUSE_CORS_ORIGINS=http://localhost:80,http://localhost
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - diff-fuse-network
+    restart: unless-stopped
+
+  # Frontend (React + Vite)
+  frontend:
+    container_name: diff-fuse-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - diff-fuse-network
+    restart: unless-stopped
+
+networks:
+  diff-fuse-network:
+    driver: bridge
+
+volumes:
+  redis_data:
