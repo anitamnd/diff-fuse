@@ -1,6 +1,6 @@
 # Multi-stage build for diff-fuse backend
 
-FROM python:3.14-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
@@ -17,4 +17,4 @@ RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /app
 USER appuser
 
-CMD [".venv/bin/uvicorn", "-k", "uvicorn.workers.UvicornWorker", "diff_fuse.main:app", "-b", "0.0.0.0:8000", "--workers", "4"]
+CMD [".venv/bin/uvicorn", "diff_fuse.main:app", "--host", "0.0.0.0", "--port", "8000"]
