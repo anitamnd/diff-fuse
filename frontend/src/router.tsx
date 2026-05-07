@@ -54,4 +54,6 @@ function RouteError() {
 export const router = createBrowserRouter([
     { path: "/", element: <RootLayout />, errorElement: <RouteError /> },
     { path: "/s/:sessionId", element: <RootLayout />, errorElement: <RouteError /> },
-]);
+], {
+    basename: "/diff-fuse"
+});
